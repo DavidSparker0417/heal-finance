@@ -24,6 +24,8 @@ function App() {
     const provider = wallet._web3ReactContext.library;
     // console.log(wallet._web3ReactContext)
     const healInfo = await queryHealInfo(provider)
+    if (healInfo === null)
+      return
     dispatch(setTokenStat(healInfo.tokenStat))
     dispatch(setUserStat(healInfo.userStat))
   }, [wallet.account]);

@@ -1,6 +1,6 @@
 import { Context } from "App";
 import { dsWalletGetTrimedAccountName } from "ds-lib/ds-web3";
-import { dsWalletConnectInjected } from "ds-lib/ds-web3";
+import { dsWalletConnectInjected } from "../ds-lib/ds-web3";
 import { useContext, useEffect, useState } from "react";
 import { useWallet } from "use-wallet";
 import { DivVCenter } from "./common/StyledComponents";
@@ -26,7 +26,7 @@ export default function Title({brand, title}) {
     if (window.ethereum)
     {
       await dsWalletConnectInjected(TARGET_NET.chainId)
-      wallet.connect()
+      await wallet.connect()
     }
     else
       wallet.connect('walletconnect');

@@ -64,6 +64,7 @@ export async function queryHealInfo(_provider) {
       }
     } catch (e) {
       console.log("[HEAL] Faild to query heal info... err = ", e.message)
+      return null
     }
   }
   userStat.sharePoint = userBalance 

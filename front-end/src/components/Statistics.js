@@ -3,6 +3,9 @@ import { useSelector } from 'react-redux'
 import { useWallet } from 'use-wallet'
 import '../css/button.css'
 import { useState } from 'react'
+import LoadingSpinner from './common/loading-spinner'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css';
 
 const TalbeColumn = ({title, value}) => {
   return (
@@ -52,27 +55,26 @@ const TableCard = ({title, contents}) => {
 }
 
 export default function Statistics({style}) {
-  const [claimButtonEnable, setClaimButtonEnable] = useState(true)
+  const [waiting, setWaiting] = useState(false)
   const healInfo = useSelector((state) => state.heal)
   const wallet = useWallet()
   
   async function handleClaim() {
     const provider = wallet._web3ReactContext.library
-    console.log("[HEAL] Clicked claim button...")
-    setClaimButtonEnable(false)
+    setWaiting(true)
     const transaction = healClaim(provider)
     await transaction
-    .then(function(recipent) {
-      setClaimButtonEnable(true)
-    })
-    .catch(function(e) {
-      setClaimButtonEnable(true)
-    })
+      .then(function(recipent) {
+        toast.success("Successfuly claimed!")
+      })
+      .catch(function(e) {
+        toast.error(e.message)
+      })
+    setWaiting(false)
   }
 
-  return(
+  return(<>
   <div className='main-container al-v'>
-  <div className="al-v" style={{...style, justifyContent: "space-between"}}>
     <div className="stat-top container">
       <InfoCard 
         icon='./images/balance.svg'
@@ -147,20 +149,27 @@ export default function Statistics({style}) {
                 <div>{`${healInfo.userStat.unClaimedRewards} ETH`}</div>
                 {
                   healInfo.userStat.unClaimedRewards !== 0
-                  && <button 
-                      className="claim" 
-                      onClick={handleClaim}
-                      disabled={!claimButtonEnable}
-                    >
-                      claim
-                    </button>
+                  && 
+                  <button 
+                    className="claim" 
+                    onClick={handleClaim}
+                    disabled={waiting}
+                  >
+                    claim
+                  </button>
                 }
               </div>
           }
         ]}
       />
     </div>
-    </div>
   </div>
-  )
+  {
+    waiting===true && <LoadingSpinner />
+  }
+  <ToastContainer 
+    position= "top-center"
+    theme='dark'
+  />
+  </>)
 }
