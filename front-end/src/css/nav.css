@@ -1,0 +1,80 @@
+.clear{
+  clear: both;
+}
+
+.slide-toggle{
+  display: none;
+}
+
+.slidemenu{
+  width: fit-content;
+  padding: 20px 20px;
+  margin: auto;
+  overflow: hidden;
+  --color:rgb(80, 177, 129);
+}
+
+.slidemenu label{
+  text-align: center;
+  display: block;
+  float: left;
+  color: var(--color);
+  opacity: 1;
+}
+
+.slidemenu label:hover{
+  cursor: pointer;
+  color: var(--color);
+  opacity: 0.5;
+}
+
+.slidemenu label span{
+  display: block;
+  padding: 10px;    
+}
+
+.slidemenu label .icon{
+  font-size: 20px;
+  background-color: var(--color);
+  text-align: center;
+  height: 50px;
+  width: 50px;
+  display: block;
+  margin: 0 auto;
+  line-height: 50px;
+  border-radius: 50%;
+}
+
+/*Bar Style*/
+
+.slider{
+  width: 100%;
+  height: 5px;
+  display: block;
+  background: #ccc;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+.slider .bar{
+  width: 50%;
+  height: 5px;
+  background: #590661;
+  border-radius: 5px;
+}
+
+/*Animations*/
+.slidemenu label, .slider .bar {
+  transition: all 500ms ease-in-out;
+  -webkit-transition: all 500ms ease-in-out;
+  -moz-transition: all 500ms ease-in-out;
+}
+
+/*Toggle*/
+
+.slidemenu .slide-toggle:checked + label{
+  opacity: 1;
+}
+
+.slidemenu #slide-item-1:checked ~ .slider .bar{ margin-left: 0; }
+.slidemenu #slide-item-2:checked ~ .slider .bar{ margin-left: 50%; }

@@ -1,0 +1,34 @@
+@font-face {
+  font-family: 'Pauraque_Serif_Rough';
+  src:url('../fonts/Pauraque_Serif_Rough.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'King Arthur Legend';
+  src:url('../fonts/King Arthur Legend.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Reikna';
+  src:url('../fonts/Reikna.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'King Castle';
+  src:url('../fonts/King Castle.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lombardic Narrow';
+  src:url('../fonts/Lombardic Narrow.ttf') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}

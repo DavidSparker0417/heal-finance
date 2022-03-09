@@ -1,0 +1,267 @@
+:root {
+  --bs-border-color: rgba(255,255,255,0.4);
+  --bs-background-color: rgba(230, 225, 225, 0.959);
+  --bs-main-color: #1c7a27;
+  --bs-text-light-color:#5f5a5a;
+  --bs-text-color: #204869;
+}
+
+body {
+  margin: 0;
+  /* background-size: auto; */
+  /* background: no-repeat url(../images/background.png); */
+  /* background-attachment: scroll; */
+  background-color: var(--bs-background-color);
+  color: var(--bs-text-color);
+  font-family: "Roboto";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h3 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
+a {
+  text-decoration: none;
+  color: var(--bs-text-light-color);
+}
+
+a:hover {
+  color: #fff
+}
+
+ul {
+  margin-top:0;
+  padding: 0;
+}
+
+ul * {
+  width: fit-content;
+}
+
+ul div {
+  margin: auto;
+}
+
+ul span {
+  display: flex;
+  font-size: larger;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+ul li {
+  padding: 5px 0 5px 1rem;
+  display: flex;
+  font-size: medium;
+  font-weight: normal;
+}
+
+.center {
+  justify-content: center;
+  align-items: center;
+}
+
+.al-h {
+  display: flex;
+  flex-direction: row;
+}
+
+.al-v {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-title {
+  height: 120px;
+  background-color: #003d2b;
+  border-bottom: 0.5px solid #ffffff50;
+}
+
+.main-title h1 {
+  font-family: 'Carter One';
+  color: #b1e8be;
+}
+
+.main-container {
+  padding: 1rem 2rem 1rem;
+  margin: auto;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title div {
+  font-family: 'Lombardic Narrow';
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat-bottom {
+  margin-top: 3rem;
+}
+
+.stat-bottom .meta-card {
+  flex-direction: column;
+}
+
+.meta-card {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1;
+  margin: 20px;
+  min-width: 350px;
+  max-width: 700px;
+  background: linear-gradient(to right, #6da76771, #a8dfa771, #ffffff17);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.stat-bottom .meta-card {
+  background: linear-gradient(to bottom, #6da76771, #a8dfa771, #ffffff17);
+}
+.meta-card .cap {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: solid 1px green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: -25px;
+}
+
+.meta-card .title {
+  padding: 0.5rem 1rem 0rem 1rem;
+  font-size : 25px;
+  /* text-align: center; */
+}
+
+.contents {
+  /* text-align: center; */
+  padding-left: 1rem;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.line-desc {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-grow: 1;
+  justify-content: space-between;
+  padding: 0rem 1rem;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-container>.line-desc div {
+  font-family: "Reikna";
+}
+
+.stat-area {
+  display: flex;    
+  flex-direction: row;
+  width: 100%;
+}
+
+.node-content {
+  display: flex;
+  flex-direction: row;
+}
+
+button {
+  --btn-color: #efeacc;
+  border-radius: 10px;
+  color: var(--btn-color);
+  border: none;
+  background-color: var(--bs-main-color);
+  cursor: pointer;
+  margin: 0 0.5rem;
+  padding: 0.5rem;
+  height: fit-content;
+}
+.main-title button:not(:disabled):hover {
+  background-color: #e46e00;
+}
+button:not(:disabled):hover {
+  background-color: #181447;
+  color: white;
+}
+button:disabled {
+  background: gray;
+  cursor:default;
+}
+.divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(270deg,hsla(0,0%,100%,0) -.15%,hsla(0,0%,58.8%,.5) 54.1%,hsla(0,0%,100%,0));
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.footer {
+  display: grid;
+  background-color: #ade6b9;
+  width: 100%;
+  grid-template-columns: 1.75fr 1fr 1fr 1fr;
+}
+
+.footer div {
+  padding-top: 1rem;
+}
+
+.second-footer {
+  display: flex;
+  flex-direction: column;
+  background-color: #003d2b;
+  color: #b1e8be;
+  width: 100%; 
+  padding: 1rem 0rem;
+  text-align: center;
+}
+
+.second-footer img {
+  width: 24px;
+  height: 24px;
+  margin-right: 1rem;
+}
+
+.extrude-x {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bs-main-color);
+  border-radius: 0 40px 40px 0;
+}
+
+.extrude-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color:var(--bs-main-color);
+  border-radius: 0 0 40% 40%;
+  font-size: 20px;
+  text-align: center;
+  padding: 1rem;
+  color: white;
+}
