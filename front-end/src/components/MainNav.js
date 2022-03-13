@@ -8,6 +8,10 @@ const pages = [
     icon: "./images/nav-claim.svg"
   },
   {
+    name: "Staking",
+    icon: "./images/stake.svg"
+  },
+  {
     name: "DAO",
     icon: "./images/dao.svg"
   },
@@ -29,7 +33,7 @@ export default function MainNav() {
         checked={page === name}
         onChange={e => setPage(e.currentTarget.value)}
       />
-      <label htmlFor={`slide-item-${id}`}>
+      <label htmlFor={`slide-item-${id}`} style={{width:"60px"}}>
         <div className="icon">
           <img src={icon} alt="" width="30px" height="30px" style={{paddingTop:"10px"}}/>
         </div>

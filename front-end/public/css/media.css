@@ -11,9 +11,13 @@
     align-items: center;
   }
   .main-container {
-    padding: 2rem 0;
+    padding: 1rem 0;
   }
   .main-title h1 {
     display: none;
+  }
+
+  .staking-page {
+    flex-direction: column;
   }
 }

@@ -10,6 +10,8 @@ const LoadingContainer = styled.div`
   justify-content: center;
   align-items: center;
   background-color: #00000063;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   z-index: 9999;
 `
 export default function LoadingSpinner() {

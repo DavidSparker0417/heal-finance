@@ -57,7 +57,7 @@
 }
 
 .slider .bar{
-  width: 50%;
+  width: 33%;
   height: 5px;
   background: #590661;
   border-radius: 5px;
@@ -77,4 +77,5 @@
 }
 
 .slidemenu #slide-item-1:checked ~ .slider .bar{ margin-left: 0; }
-.slidemenu #slide-item-2:checked ~ .slider .bar{ margin-left: 50%; }
+.slidemenu #slide-item-2:checked ~ .slider .bar{ margin-left: 33%; }
+.slidemenu #slide-item-3:checked ~ .slider .bar{ margin-left: 66%; }

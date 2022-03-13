@@ -91,7 +91,7 @@ ul li {
   max-width: 1100px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* align-items: center; */
 }
 
 .title div {
@@ -110,10 +110,6 @@ ul li {
   margin-top: 3rem;
 }
 
-.stat-bottom .meta-card {
-  flex-direction: column;
-}
-
 .meta-card {
   display: flex;
   flex-direction: row;
@@ -128,8 +124,14 @@ ul li {
 }
 
 .stat-bottom .meta-card {
+  flex-direction: column;
+}
+
+.g-vertical {
+  flex-direction: column;
   background: linear-gradient(to bottom, #6da76771, #a8dfa771, #ffffff17);
 }
+
 .meta-card .cap {
   width: 50px;
   height: 50px;
@@ -201,6 +203,7 @@ button {
 .main-title button:not(:disabled):hover {
   background-color: #e46e00;
 }
+
 button:not(:disabled):hover {
   background-color: #181447;
   color: white;
@@ -264,4 +267,48 @@ button:disabled {
   text-align: center;
   padding: 1rem;
   color: white;
+}
+
+.staking-page {
+  flex-direction: row;
+}
+
+.staking-page input[type="text"], input[type="number"] {
+  color: white;
+  font: 24px 'Roboto', sans-serif;
+  /* background-color: #031b0970; */
+  /* border-radius: 10px; */
+}
+
+.stake-panel {
+  flex-direction: column;
+}
+
+.nft-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  justify-content: space-evenly;
+}
+
+.nft-panel img {
+  width: 150px;
+  height: 150px;
+  border-radius: 10px 10px 0 0;
+}
+
+.nft-panel img:hover {
+  opacity: 0.5;
+}
+
+.nft-card {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  margin-bottom: 10px;
+  border: solid 1px green;
+  background-color: #079287f5;
+  border-radius: 10px;
+  cursor: pointer;
 }

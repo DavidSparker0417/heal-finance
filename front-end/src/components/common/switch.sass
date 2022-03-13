@@ -1,0 +1,44 @@
+.switch
+  --color: #732497
+  position: relative
+  width: auto
+  height: auto
+  border: 3px solid var(--color)
+  color: var(--color)
+  font-size: 25px
+  border-radius: 10px
+
+.quality
+  position: relative
+  display: inline-block
+  width: 50%
+  height: 100%
+  line-height: 40px
+  &:first-child
+    label
+      border-radius: 5px 0 0 5px
+  &:last-child
+    label
+      border-radius: 0 5px 5px 0
+  label
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    cursor: pointer
+    text-align: center
+    transition: transform 0.4s, color 0.4s, background-color 0.4s
+  input[type="radio"]
+    appearance: none
+    width: 0
+    height: 0
+    opacity: 0
+    &:focus 
+      outline: 0
+      outline-offset: 0
+    &:checked ~ label
+      background-color: var(--color)
+      color: #ffffff
+    &:active ~ label
+      transform: scale(1.05)

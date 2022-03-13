@@ -2,10 +2,9 @@ import { healClaim } from '../heal-contract'
 import { useSelector } from 'react-redux'
 import { useWallet } from 'use-wallet'
 import '../css/button.css'
-import { useState } from 'react'
-import LoadingSpinner from './common/loading-spinner'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css';
+import { useContext, useState } from 'react'
+import { toast } from 'react-toastify'
+import { Context } from 'App'
 
 const TalbeColumn = ({title, value}) => {
   return (
@@ -38,7 +37,7 @@ export const InfoCard = ({icon, title, value}) => {
 
 const TableCard = ({title, contents}) => {
   return(
-    <div className="meta-card">
+    <div className="meta-card g-vertical">
       <div className="extrude-y">
         {title}
       </div>
@@ -58,22 +57,27 @@ export default function Statistics({style}) {
   const [waiting, setWaiting] = useState(false)
   const healInfo = useSelector((state) => state.heal)
   const wallet = useWallet()
+  const {setLoading} = useContext(Context)
   
   async function handleClaim() {
     const provider = wallet._web3ReactContext.library
     setWaiting(true)
+    setLoading(true)
     const transaction = healClaim(provider)
     await transaction
       .then(function(recipent) {
         toast.success("Successfuly claimed!")
+        setWaiting(false)
+        setLoading(false)
       })
       .catch(function(e) {
         toast.error(e.message)
+        setWaiting(false)
+        setLoading(false)
       })
-    setWaiting(false)
   }
 
-  return(<>
+  return(<div style={{position:"relative"}}> 
   <div className='main-container al-v'>
     <div className="stat-top container">
       <InfoCard 
@@ -92,7 +96,7 @@ export default function Statistics({style}) {
         value={`${healInfo.tokenStat.treasuryBalance} ETH`}/>
       <InfoCard 
         icon='./images/claim.svg'
-        title="Total Reflected" 
+        title="Total Claimed" 
         value={`${healInfo.userStat.totalClaimed} ETH`}/>
     </div>
     <div className="stat-bottom container">
@@ -164,12 +168,5 @@ export default function Statistics({style}) {
       />
     </div>
   </div>
-  {
-    waiting===true && <LoadingSpinner />
-  }
-  <ToastContainer 
-    position= "top-center"
-    theme='dark'
-  />
-  </>)
+  </div>)
 }

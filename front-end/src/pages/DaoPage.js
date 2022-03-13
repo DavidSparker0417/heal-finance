@@ -1,6 +1,5 @@
-import { InfoCard } from "./Statistics";
 
-export default function StakingPage() {
+export default function DaoPage() {
   return(
     <div className='main-container al-v'>
       <h1>Comming Soon...</h1>

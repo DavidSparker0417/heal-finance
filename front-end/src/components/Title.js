@@ -4,12 +4,13 @@ import { dsWalletConnectInjected } from "../ds-lib/ds-web3";
 import { useContext, useEffect, useState } from "react";
 import { useWallet } from "use-wallet";
 import { DivVCenter } from "./common/StyledComponents";
+import { toast } from "react-toastify";
 
 export default function Title({brand, title}) {
   const wallet = useWallet()
   const {TARGET_NET} = useContext(Context)
   const [walletButtonFace, setWalletButtonFace] = useState("Wallet Connect");
-
+  const {setLoading} = useContext(Context)
   // event on wallet 
   useEffect(() => {
     if (wallet.status === 'connecting')
@@ -22,14 +23,26 @@ export default function Title({brand, title}) {
 
   // halder on clicking wallet connect button
   async function handleConnectWallet() {
-    if (wallet.isConnected()) return;
+    if (wallet.isConnected()) {
+      wallet.reset()
+      return;
+    }
     if (window.ethereum)
     {
+      setLoading(true)
       await dsWalletConnectInjected(TARGET_NET.chainId)
+        .then(function(recipent) {
+          setLoading(false)
+          toast.success("Wallet connected!")
+        })
+        .catch(function(e) {
+          setLoading(false)
+          toast.error(e.message)
+        })
       await wallet.connect()
     }
     else
-      wallet.connect('walletconnect');
+      await wallet.connect('walletconnect');
   }
 
   return(

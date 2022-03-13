@@ -3,12 +3,15 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 import { useWallet } from 'use-wallet';
 import { TARGET_NET } from 'config';
 import { useDispatch } from 'react-redux';
-import { setTokenStat, setUserStat } from './store/healSlice';
-import { queryHealInfo } from './heal-contract';
+import { setNftStat, setTokenStat, setUserStat } from './store/healSlice';
+import { queryHealInfo, queryNftInfo } from './heal-contract';
 import Footer from './components/Footer';
 import MainNav from './components/MainNav';
 import { BrowserRouter } from 'react-router-dom';
 import Main from './Main';
+import LoadingSpinner from './components/common/loading-spinner'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const Context = createContext()
 const REFRESH_INTERVAL = 2000;
@@ -18,16 +21,20 @@ function App() {
   const wallet = useWallet();
   // redux dispather
   const dispatch = useDispatch()
+  // loading status
+  const [loading, setLoading] = useState(false)
   
   // refresh function
   const refresh = useCallback(async () => {
     const provider = wallet._web3ReactContext.library;
-    // console.log(wallet._web3ReactContext)
     const healInfo = await queryHealInfo(provider)
     if (healInfo === null)
       return
     dispatch(setTokenStat(healInfo.tokenStat))
     dispatch(setUserStat(healInfo.userStat))
+
+    const nftInfo = await queryNftInfo(provider)
+    dispatch(setNftStat(nftInfo))
   }, [wallet.account]);
 
   // refresh page every a certain period
@@ -52,8 +59,7 @@ function App() {
   }, [wallet.balance])
 
   return (
-    <Context.Provider value={{TARGET_NET}}>
-      <div className='App'>
+    <Context.Provider value={{TARGET_NET, setLoading}}>
       <Title 
         brand = '/images/brand.png'
         title = "HEAL THE WORLD"
@@ -63,7 +69,13 @@ function App() {
         <Main />
       </BrowserRouter>
       <Footer />
-      </div>
+      <ToastContainer 
+      position= "top-center"
+      theme='dark'
+  />
+    {
+      loading===true && <LoadingSpinner />
+    }
     </Context.Provider>
   );
 }
