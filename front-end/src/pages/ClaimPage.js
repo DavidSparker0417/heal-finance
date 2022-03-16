@@ -83,21 +83,21 @@ export default function Statistics({style}) {
       <InfoCard 
         icon='./images/balance.svg'
         title="Your HEAL Balance" 
-        value={`${healInfo.userStat.tokenBalance} $HEAL`}
+        value={`${healInfo.userStat.tokenBalance} HEAL`}
       />
       <InfoCard 
         icon='./images/unclaimed.svg'
         title="Unclaimed Rewards" 
-        value={`${healInfo.userStat.unClaimedRewards} ETH`}
+        value={`${healInfo.userStat.unClaimedRewards} ${healInfo.stakingStat.rewardTokenSymbol}`}
       />
       <InfoCard 
         icon='./images/treasury.svg'
         title="Treasury Balance" 
-        value={`${healInfo.tokenStat.treasuryBalance} ETH`}/>
+        value={`${healInfo.tokenStat.treasuryBalance} $`}/>
       <InfoCard 
         icon='./images/claim.svg'
         title="Total Claimed" 
-        value={`${healInfo.userStat.totalClaimed} ETH`}/>
+        value={`${healInfo.userStat.totalClaimed} ${healInfo.stakingStat.rewardTokenSymbol}`}/>
     </div>
     <div className="stat-bottom container">
       {/* <TableCard 
@@ -140,17 +140,17 @@ export default function Statistics({style}) {
         ]}
       />
       <TableCard 
-        title = "CLAIM ETH"
+        title = "STAKING REWARDS"
         contents = {[
           {
             title: "Your Share Point",
-            value: `${healInfo.userStat.sharePoint} %`
+            value: `${healInfo.userStat.stakeSharePoint} %`
           },
           {
-            title: "Reflections",
+            title: "Rewards",
             value: 
               <div className="al-h" style={{width:"100%", justifyContent:"space-between"}}>
-                <div>{`${healInfo.userStat.unClaimedRewards} ETH`}</div>
+                <div>{`${healInfo.userStat.unClaimedRewards} ${healInfo.stakingStat.rewardTokenSymbol}`}</div>
                 {
                   healInfo.userStat.unClaimedRewards !== 0
                   && 

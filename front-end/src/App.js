@@ -3,7 +3,7 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 import { useWallet } from 'use-wallet';
 import { TARGET_NET } from 'config';
 import { useDispatch } from 'react-redux';
-import { setNftStat, setTokenStat, setUserStat } from './store/healSlice';
+import { setNftStat, setStakingStat, setTokenStat, setUserStat } from './store/healSlice';
 import { queryHealInfo, queryNftInfo } from './heal-contract';
 import Footer from './components/Footer';
 import MainNav from './components/MainNav';
@@ -32,7 +32,7 @@ function App() {
       return
     dispatch(setTokenStat(healInfo.tokenStat))
     dispatch(setUserStat(healInfo.userStat))
-
+    dispatch(setStakingStat(healInfo.stakingStat))
     const nftInfo = await queryNftInfo(provider)
     dispatch(setNftStat(nftInfo))
   }, [wallet.account]);

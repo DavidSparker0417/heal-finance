@@ -8,7 +8,9 @@ export const healSlice = createSlice({
       totalClaimed    : 0,
       unClaimedRewards: 0,
       sharePoint      : 0,
+      stakeSharePoint : 0,
       totalStaked     : 0,
+      approved        : false
     },
     tokenStat : {
       price           : 0,
@@ -17,6 +19,9 @@ export const healSlice = createSlice({
     },
     nftStat : {
       userHolds       : []
+    },
+    stakingStat : {
+      rewardTokenSymbol : ""
     }
   },
   reducers : {
@@ -28,6 +33,9 @@ export const healSlice = createSlice({
     },
     setNftStat: (state, action) => {
       state.nftStat.userHolds = action.payload
+    },
+    setStakingStat: (state, action) => {
+      state.stakingStat = action.payload
     }
   },
 })
@@ -35,6 +43,7 @@ export const healSlice = createSlice({
 export const {
   setUserStat,
   setTokenStat,
-  setNftStat
+  setNftStat,
+  setStakingStat
 } = healSlice.actions
 export default healSlice.reducer
