@@ -27,27 +27,27 @@ export default function Footer() {
       <ul>
         <div>
           <span>Social</span>
-          <li><a href="#">Tweeter</a></li>
-          <li><a href="#">Telegram</a></li>
-          <li><a href="#">Medium</a></li>
+          <li><a href="http://T.me/HealTheWorldLLC" target="_blank">Tweeter</a></li>
+          <li><a href="https://twitter.com/Healtheworld_io?t=w2_LgADP2580nIIup1615w&s=09" target="_blank">Telegram</a></li>
+          <li><a href="https://medium.com/@healtheworldllc/heal-a-blockchain-fundraising-platform-43174759153d" target="_blank">Medium</a></li>
         </div>
       </ul>
     </footer>
     <div className="second-footer">
       <div>©️ $Heal The World 2022, All Right Reserves | LLC</div>
       <div className="al-h center" style={{paddingTop:"1rem"}}>
-        <a href="#">
+        <a href="https://twitter.com/Healtheworld_io?t=w2_LgADP2580nIIup1615w&s=09" target="_blank">
           <img src='./images/twitter.svg' alt=""/>
         </a>
-        <a href="#">
+        <a href="http://T.me/HealTheWorldLLC" target="_blank">
           <img src='./images/telegram.svg' alt=""/>
         </a>
-        <a href="#">
+        <a href="https://medium.com/@healtheworldllc/heal-a-blockchain-fundraising-platform-43174759153d" target="_blank">
           <img src='./images/medium.svg' alt=""/>
         </a>
-        <a href="#">
+        {/* <a href="#">
           <img src='./images/discord.svg' alt=""/>
-        </a>
+        </a> */}
       </div>
     </div>
     </>

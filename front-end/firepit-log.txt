@@ -12,7 +12,7 @@ Checking for npm/bin/npm-cli install at C:\snapshot\firepit\node_modules\npm\bin
 Found npm/bin/npm-cli install.
 Runtime binaries created.
 D:\Source\Development\Web\firebase-tools-instant-win.exe
-D:\Source\Development\Web\firebase-tools-instant-win.exe,C:\snapshot\firepit\firepit.js,deploy
+D:\Source\Development\Web\firebase-tools-instant-win.exe,C:\snapshot\firepit\firepit.js,is:npm,run,build
 Checking for npm/bin/npm-cli install at C:\Users\pc\.cache\firebase\tools\lib\node_modules\npm\bin\npm-cli
 Checking for npm/bin/npm-cli install at C:\Users\pc\.cache\firebase\tools\node_modules\npm\bin\npm-cli
 Checking for npm/bin/npm-cli install at C:\snapshot\firepit\node_modules\npm\bin\npm-cli
@@ -21,4 +21,4 @@ Checking for npm/bin/npm-cli install at C:\Users\pc\.cache\firebase\tools\lib\no
 Checking for npm/bin/npm-cli install at C:\Users\pc\.cache\firebase\tools\node_modules\npm\bin\npm-cli
 Checking for npm/bin/npm-cli install at C:\snapshot\firepit\node_modules\npm\bin\npm-cli
 Found npm/bin/npm-cli install.
-Error: EPERM: operation not permitted, open 'C:\Users\pc\CACHE~1\firebase\runtime\npm'
+Error: EPERM: operation not permitted, open 'C:\Users\pc\CACHE~1\firebase\runtime\shell'

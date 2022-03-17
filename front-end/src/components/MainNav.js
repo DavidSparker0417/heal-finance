@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import '../css/nav.css'
 
 const pages = [
@@ -19,9 +19,16 @@ const pages = [
 
 export default function MainNav() {
   const navigate = useNavigate()
-  const [page, setPage] = useState("Claim")
+  const location = useLocation()
+  const [page, setPage] = useState()
+  
   useEffect(() => {
-    navigate(`/${page}`)
+    setPage(location.pathname.substring(1))
+  }, location)
+  
+  useEffect(() => {
+    if (page !== undefined)
+      navigate(`/${page}`)
   }, [page])
 
   const NavItem = ({id, name, icon}) => (<>
