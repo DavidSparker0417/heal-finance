@@ -175,14 +175,14 @@ export default function StakingPage() {
     { 
     wallet.isConnected() !== true 
     ? <h1 style={{textAlign:"center"}}>Wallet not connected.</h1>
-    : <div className='main-container staking-page'>
+    : <div className='main-container staking-page' style={{justifyContent:"center"}}>
       <StakerPanel 
         balance= {healInfo.userStat.tokenBalance}
         totalStaked= {healInfo.userStat.totalStaked}
       />
-      <NFTPanel 
+      {/* <NFTPanel 
         nfts={healInfo.nftStat.userHolds}
-      />
+      /> */}
     </div>
     }
   </div>)

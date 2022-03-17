@@ -11,17 +11,17 @@ export default function Footer() {
       <ul>
         <div>
           <span>Company</span>
-          <li><a href="#">Tokenomics</a></li>
-          <li><a href="#">Roadmap</a></li>
-          <li><a href="#">Team</a></li>
+          <li><a href="https://healtheworld.io/#tok" target = "_blank">Tokenomics</a></li>
+          <li><a href="https://healtheworld.io/#road" target = "_blank">Roadmap</a></li>
+          <li><a href="https://healtheworld.io/#team" target = "_blank">Team</a></li>
         </div>
       </ul>
       <ul>
         <div>
           <span>Help</span>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">How To Buy</a></li>
+          <li><a href="https://healtheworld.io/#vis" target = "_blank">About Us</a></li>
+          <li><a href="https://healtheworld.io/#team" target = "_blank">Team</a></li>
+          <li><a href="https://heal.gitbook.io/heal-whitepaper/" target = "_blank">White Paper</a></li>
         </div>
       </ul>
       <ul>

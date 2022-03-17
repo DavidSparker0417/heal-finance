@@ -10,7 +10,7 @@ import store from './store/store';
 ReactDOM.render(
   <React.StrictMode>
     <UseWalletProvider 
-      autoConnect
+      autoConnect = {true}
       chainId = {TARGET_NET.chainId}
       connectors = {{
         injected: {

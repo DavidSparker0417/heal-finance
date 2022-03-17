@@ -14,7 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export const Context = createContext()
-const REFRESH_INTERVAL = 2000;
+const REFRESH_INTERVAL = 3000;
 
 function App() {
   // wallet

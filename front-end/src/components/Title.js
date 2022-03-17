@@ -28,8 +28,8 @@ export default function Title({ brand, title }) {
       return;
     }
     let behavior
-    setLoading(true)
     if (window.ethereum) {
+      setLoading(true)
       try {
         await dsWalletConnectInjected(TARGET_NET)
       } catch (e) {
@@ -38,14 +38,7 @@ export default function Title({ brand, title }) {
         return
       }
       behavior = wallet.connect()
-    }
-    else
-    {
-      behavior = wallet.connect('walletconnect')
-      alert(behavior)
-    }
-    
-    behavior
+      behavior
       .then(function() {
         setLoading(false)
         toast.success("Wallet connected!")
@@ -54,6 +47,9 @@ export default function Title({ brand, title }) {
         setLoading(false)
         toast.error(dsErrMsgGet(e.message))
       })
+    }
+    else
+      wallet.connect('walletconnect')
   }
 
   return (

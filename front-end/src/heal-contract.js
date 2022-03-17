@@ -211,7 +211,7 @@ export async function queryHealInfo(_provider) {
       tokenStat.totalSupply = dsBnWeiToEth(await heal.methods.totalSupply().call(), decimals)
       tokenStat.price = dsBnWeiToEth(await dsWeb3GetTokenPriceByRouter(provider, TARGET_NET.router, healToken, TARGET_NET.stablecoin))
       // get staking stat
-      stakingStat.rewardTokenSymbol = await dsWeb3TokenSymbol(provider, rewardingToken)
+      stakingStat.rewardTokenSymbol = "ETH" //await dsWeb3TokenSymbol(provider, rewardingToken)
       stakingStat.totalStaked = dsBnWeiToEth(await distributor.methods.totalSharesDeposited().call(), decimals)
       stakingStat.totalStakers = await distributor.methods.totalStakedUsers().call()
       // get user specific stat
