@@ -27,8 +27,8 @@ export default function Footer() {
       <ul>
         <div>
           <span>Social</span>
-          <li><a href="http://T.me/HealTheWorldLLC" target="_blank">Tweeter</a></li>
-          <li><a href="https://twitter.com/Healtheworld_io?t=w2_LgADP2580nIIup1615w&s=09" target="_blank">Telegram</a></li>
+          <li><a href="https://twitter.com/Healtheworld_io?t=w2_LgADP2580nIIup1615w&s=09" target="_blank">Twitter</a></li>
+          <li><a href="http://T.me/HealTheWorldLLC" target="_blank">Telegram</a></li>
           <li><a href="https://medium.com/@healtheworldllc/heal-a-blockchain-fundraising-platform-43174759153d" target="_blank">Medium</a></li>
         </div>
       </ul>

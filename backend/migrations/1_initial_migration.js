@@ -1,34 +1,28 @@
 const { dsConfigWrite, dsConfigRead } = require("../ds-lib/ds-config");
 const configPath = './config.json'
-const heal = artifacts.require("HEAL");
-const staking = artifacts.require("StakingRewardsWithReflection")
+const {constants} = require('@openzeppelin/test-helpers')
+
+async function deployHealToken(deployer) {
+  const heal = artifacts.require("HEAL");
+  await deployer.deploy(heal);
+  const healContract = await heal.deployed()
+  console.log("[HEAL] contract address = ", healContract.address)
+  return healContract.address
+}
+
+async function deployFaaS(deployer) {
+  const faas = artifacts.require("HEALFaaS");
+  await deployer.deploy(faas, constants.ZERO_ADDRESS, constants.ZERO_ADDRESS);
+  const faasContract = await faas.deployed()
+  console.log("[FAAS] contract address = ", faasContract.address)
+  return faasContract.address
+}
 
 module.exports = async function (deployer, network, account) {
   let config = dsConfigRead(configPath)
   const targetNet = config.networks[config.networks.target]
   // ------- deploy heal token -----------
-  await deployer.deploy(
-    heal,
-    targetNet.factory, // factory
-    targetNet.router, // router
-    config.wallet.buyback,
-    config.wallet.treasury,
-    config.wallet.charity
-  );
-  const healContract = await heal.deployed()
-  console.log("[HEAL] contract address = ", healContract.address)
-  config.contracts.heal = healContract.address
-  // ------- deploy staking token -----------
-  await deployer.deploy(
-    staking,
-    account[0],           // owner
-    account[0],           // reward distribution
-    targetNet.weth,       // reward token
-    healContract.address, // staking token
-    targetNet.weth        // weth
-  )
-  const stakingContract = await staking.deployed()
-  console.log("[STAKE] contract address = ", stakingContract.address)
-  config.contracts.staking = stakingContract.address
+  // config.contracts.heal = await deployHealToken(deployer)
+  config.contracts.faas = await deployFaaS(deployer)
   dsConfigWrite(config, configPath)
 };

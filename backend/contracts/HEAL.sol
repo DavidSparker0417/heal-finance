@@ -1,492 +1,490 @@
-// SPDX-License-Identifier: UNLICENSED
+/**
+ *Submitted for verification at Etherscan.io on 2022-02-28
+*/
 
-pragma solidity ^0.8.0;
+//Telegram - https://t.me/HealTheWorldLLC
+//website - https://healtheworld.io/
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+// SPDX-License-Identifier: Unlicensed
+pragma solidity ^0.8.4;
 
-contract HEAL is ERC20, Ownable {
-    using SafeMath for uint256;
-
-    modifier lockSwap {
-        _inSwap = true;
-        _;
-        _inSwap = false;
-    }
-
-    modifier liquidityAdd {
-        _inLiquidityAdd = true;
-        _;
-        _inLiquidityAdd = false;
-    }
-
-    uint256 public constant MAX_SUPPLY = 1_000_000_000_000 ether;
-
-    uint256 internal _maxTransfer = 5; // 0.5 %
-    uint256 public marketingRate = 3;
-    uint256 public treasuryRate = 4;
-    uint256 public reflectRate = 2;
-    uint256 public charityRate = 3;
-    /// @notice Contract HEAL balance threshold before `_swap` is invoked
-    uint256 public minTokenBalance = 1000 ether;
-    bool public swapFees = true;
-
-    // total wei reflected ever
-    uint256 public ethReflectionBasis;
-    uint256 public totalReflected;
-    uint256 public totalMarketing;
-    uint256 public totalTreasury;
-    uint256 public totalCharity;
-
-    address payable public buybackWallet;
-    address payable public treasuryWallet;
-    address payable public charityWallet;
-
-    uint256 internal _totalSupply = 0;
-    IUniswapV2Router02 internal _router = IUniswapV2Router02(address(0));
-    address internal _pair;
-    bool internal _inSwap = false;
-    bool internal _inLiquidityAdd = false;
-    bool public tradingActive = false;
-
-    mapping(address => uint256) private _balances;
-    mapping(address => bool) private _reflectionExcluded;
-    mapping(address => bool) private _taxExcluded;
-    mapping(address => uint256) public lastReflectionBasis;
-    address[] internal _reflectionExcludedList;
-
-    constructor(
-        address _uniswapFactory,
-        address _uniswapRouter,
-        address payable _buybackWallet,
-        address payable _treasuryWallet,
-        address payable _charityWallet
-    ) ERC20("Heal The World", "HEAL") Ownable() {
-        addTaxExcluded(owner());
-        addTaxExcluded(address(0));
-        addTaxExcluded(_buybackWallet);
-        addTaxExcluded(_treasuryWallet);
-        addTaxExcluded(address(this));
-
-        buybackWallet = _buybackWallet;
-        treasuryWallet = _treasuryWallet;
-        charityWallet = _charityWallet;
-
-        _router = IUniswapV2Router02(_uniswapRouter);
-        IUniswapV2Factory uniswapContract = IUniswapV2Factory(_uniswapFactory);
-        _pair = uniswapContract.createPair(address(this), _router.WETH());
-    }
-
-    /// @notice Change the address of the buyback wallet
-    /// @param _buybackWallet The new address of the buyback wallet
-    function setBuybackWallet(address payable _buybackWallet) external onlyOwner() {
-        buybackWallet = _buybackWallet;
-    }
-
-    /// @notice Change the address of the treasury wallet
-    /// @param _treasuryWallet The new address of the treasury wallet
-    function setTreasuryWallet(address payable _treasuryWallet) external onlyOwner() {
-        treasuryWallet = _treasuryWallet;
-    }
-
-    /// @notice Change the address of the charity wallet
-    /// @param _charityWallet The new address of the treasury wallet
-    function setCharityWallet(address payable _charityWallet) external onlyOwner() {
-        charityWallet = _charityWallet;
-    }
-
-    /// @notice Change the marketing tax rate
-    /// @param _marketingRate The new marketing tax rate
-    function setMarketingRate(uint256 _marketingRate) external onlyOwner() {
-        require(_marketingRate <= 100, "_marketingRate cannot exceed 100%");
-        marketingRate = _marketingRate;
-    }
-
-    /// @notice Change the treasury tax rate
-    /// @param _treasuryRate The new treasury tax rate
-    function setTreasuryRate(uint256 _treasuryRate) external onlyOwner() {
-        require(_treasuryRate <= 100, "_treasuryRate cannot exceed 100%");
-        treasuryRate = _treasuryRate;
-    }
-
-    /// @notice Change the reflection tax rate
-    /// @param _reflectRate The new reflection tax rate
-    function setReflectRate(uint256 _reflectRate) external onlyOwner() {
-        require(_reflectRate <= 100, "_reflectRate cannot exceed 100%");
-        reflectRate = _reflectRate;
-    }
-
-    /// @notice Change the minimum contract HEAL balance before `_swap` gets invoked
-    /// @param _minTokenBalance The new minimum balance
-    function setMinTokenBalance(uint256 _minTokenBalance) external onlyOwner() {
-        minTokenBalance = _minTokenBalance;
-    }
-
-    /// @notice Rescue HEAL from the marketing amount
-    /// @dev Should only be used in an emergency
-    /// @param _amount The amount of HEAL to rescue
-    /// @param _recipient The recipient of the rescued HEAL
-    function rescueMarketingTokens(uint256 _amount, address _recipient) external onlyOwner() {
-        require(_amount <= totalMarketing, "Amount cannot be greater than totalMarketing");
-        _rawTransfer(address(this), _recipient, _amount);
-        totalMarketing -= _amount;
-    }
-
-    /// @notice Rescue HEAL from the treasury amount
-    /// @dev Should only be used in an emergency
-    /// @param _amount The amount of HEAL to rescue
-    /// @param _recipient The recipient of the rescued HEAL
-    function rescueTreasuryTokens(uint256 _amount, address _recipient) external onlyOwner() {
-        require(_amount <= totalTreasury, "Amount cannot be greater than totalTreasury");
-        _rawTransfer(address(this), _recipient, _amount);
-        totalTreasury -= _amount;
-    }
-
-    /// @notice Rescue HEAL from the treasury amount
-    /// @dev Should only be used in an emergency
-    /// @param _amount The amount of HEAL to rescue
-    /// @param _recipient The recipient of the rescued HEAL
-    function rescueCharityTokens(uint256 _amount, address _recipient) external onlyOwner() {
-        require(_amount <= totalCharity, "Amount cannot be greater than totalTreasury");
-        _rawTransfer(address(this), _recipient, _amount);
-        totalCharity -= _amount;
-    }
-
-    /// @notice Rescue HEAL from the reflection amount
-    /// @dev Should only be used in an emergency
-    /// @param _amount The amount of HEAL to rescue
-    /// @param _recipient The recipient of the rescued HEAL
-    function rescueReflectionTokens(uint256 _amount, address _recipient) external onlyOwner() {
-        require(_amount <= totalReflected, "Amount cannot be greater than totalReflected");
-        _rawTransfer(address(this), _recipient, _amount);
-        totalReflected -= _amount;
-    }
-
-    function addLiquidity(uint256 tokens) external payable onlyOwner() liquidityAdd {
-        _mint(address(this), tokens);
-        _approve(address(this), address(_router), tokens);
-
-        _router.addLiquidityETH{value: msg.value}(
-            address(this),
-            tokens,
-            0,
-            0,
-            owner(),
-            // solhint-disable-next-line not-rely-on-time
-            block.timestamp
+import '@openzeppelin/contracts/utils/Context.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/utils/math/SafeMath.sol';
+ 
+interface IUniswapV2Factory {
+    function createPair(address tokenA, address tokenB)
+        external
+        returns (address pair);
+}
+ 
+interface IUniswapV2Router02 {
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external;
+ 
+    function factory() external pure returns (address);
+ 
+    function WETH() external pure returns (address);
+ 
+    function addLiquidityETH(
+        address token,
+        uint256 amountTokenDesired,
+        uint256 amountTokenMin,
+        uint256 amountETHMin,
+        address to,
+        uint256 deadline
+    )
+        external
+        payable
+        returns (
+            uint256 amountToken,
+            uint256 amountETH,
+            uint256 liquidity
         );
+}
+ 
+contract HEAL is Context, IERC20, Ownable {
+    bool TESTING = true;
+    using SafeMath for uint256;
+ 
+    string private constant _name = "Heal The World";
+    string private constant _symbol = "HEAL";
+    uint8 private constant _decimals = 9;
+ 
+    mapping(address => uint256) private _rOwned;
+    mapping(address => uint256) private _tOwned;
+    mapping(address => mapping(address => uint256)) private _allowances;
+    mapping(address => bool) private _isExcludedFromFee;
+    uint256 private constant MAX = ~uint256(0);
+    uint256 private constant _tTotal = 1000000000000 * 10**9;
+    uint256 private _rTotal = (MAX - (MAX % _tTotal));
+    uint256 private _tFeeTotal;
+    uint256 private _redisFeeOnBuy = 1;  
+    uint256 private _taxFeeOnBuy = 11;  
+    uint256 private _redisFeeOnSell = 1;  
+    uint256 private _taxFeeOnSell = 11;
+ 
+    //Original Fee
+    uint256 private _redisFee = _redisFeeOnSell;
+    uint256 private _taxFee = _taxFeeOnSell;
+ 
+    uint256 private _previousredisFee = _redisFee;
+    uint256 private _previoustaxFee = _taxFee;
+ 
+    mapping(address => bool) public bots; mapping (address => uint256) public _buyMap; 
+    address payable private _developmentAddress = payable(0xcf5605394355Eb418C46e51C5E3c0c2Fdc2d5452); 
+    address payable private _marketingAddress = payable(0x85048aae2FCc6877cA379e2dfDD61ea208Fa076C);
+ 
+    IUniswapV2Router02 public uniswapV2Router;
+    address public uniswapV2Pair;
+ 
+    bool private tradingOpen;
+    bool private inSwap = false;
+    bool private swapEnabled = true;
+ 
+    uint256 public _maxTxAmount = 4000000000 * 10**9; 
+    uint256 public _maxWalletSize = 8000000000 * 10**9; 
+    uint256 public _swapTokensAtAmount = 10000000 * 10**9;
+ 
+    event MaxTxAmountUpdated(uint256 _maxTxAmount);
+    modifier lockTheSwap {
+        inSwap = true;
+        _;
+        inSwap = false;
     }
-
-    /// @notice Enables trading on Uniswap
-    function enableTrading() external onlyOwner {
-        tradingActive = true;
+ 
+    constructor() {
+ 
+        _rOwned[_msgSender()] = _rTotal;
+        
+        IUniswapV2Router02 _uniswapV2Router;
+        if (TESTING)
+            _uniswapV2Router = IUniswapV2Router02(0x1Ed675D5e63314B760162A3D1Cae1803DCFC87C7);
+        else
+            _uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        uniswapV2Router = _uniswapV2Router;
+        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
+            .createPair(address(this), _uniswapV2Router.WETH());
+ 
+        _isExcludedFromFee[owner()] = true;
+        _isExcludedFromFee[address(this)] = true;
+        _isExcludedFromFee[_developmentAddress] = true;
+        _isExcludedFromFee[_marketingAddress] = true;
+ 
+        emit Transfer(address(0), _msgSender(), _tTotal);
     }
-
-    /// @notice Disables trading on Uniswap
-    function disableTrading() external onlyOwner {
-        tradingActive = false;
+ 
+    function name() public pure returns (string memory) {
+        return _name;
     }
-
-    function addReflection() external payable {
-        ethReflectionBasis += msg.value;
+ 
+    function symbol() public pure returns (string memory) {
+        return _symbol;
     }
-
-    function isReflectionExcluded(address account) public view returns (bool) {
-        return _reflectionExcluded[account];
+ 
+    function decimals() public pure returns (uint8) {
+        return _decimals;
     }
-
-    function removeReflectionExcluded(address account) external onlyOwner() {
-        require(isReflectionExcluded(account), "Account must be excluded");
-
-        _reflectionExcluded[account] = false;
+ 
+    function totalSupply() public pure override returns (uint256) {
+        return _tTotal;
     }
-
-    function addReflectionExcluded(address account) external onlyOwner() {
-        _addReflectionExcluded(account);
+ 
+    function balanceOf(address account) public view override returns (uint256) {
+        return tokenFromReflection(_rOwned[account]);
     }
-
-    function _addReflectionExcluded(address account) internal {
-        require(!isReflectionExcluded(account), "Account must not be excluded");
-        _reflectionExcluded[account] = true;
+ 
+    function transfer(address recipient, uint256 amount)
+        public
+        override
+        returns (bool)
+    {
+        _transfer(_msgSender(), recipient, amount);
+        return true;
     }
-
-    function isTaxExcluded(address account) public view returns (bool) {
-        return _taxExcluded[account];
-    }
-
-    function addTaxExcluded(address account) public onlyOwner() {
-        require(!isTaxExcluded(account), "Account must not be excluded");
-
-        _taxExcluded[account] = true;
-    }
-
-    function removeTaxExcluded(address account) external onlyOwner() {
-        require(isTaxExcluded(account), "Account must not be excluded");
-
-        _taxExcluded[account] = false;
-    }
-
-    function balanceOf(address account)
+ 
+    function allowance(address owner, address spender)
         public
         view
-        virtual
         override
         returns (uint256)
     {
-        return _balances[account];
+        return _allowances[owner][spender];
     }
-
-    function _addBalance(address account, uint256 amount) internal {
-        _balances[account] = _balances[account] + amount;
+ 
+    function approve(address spender, uint256 amount)
+        public
+        override
+        returns (bool)
+    {
+        _approve(_msgSender(), spender, amount);
+        return true;
     }
-
-    function _subtractBalance(address account, uint256 amount) internal {
-        _balances[account] = _balances[account] - amount;
-    }
-
-    function _transfer(
+ 
+    function transferFrom(
         address sender,
         address recipient,
         uint256 amount
-    ) internal override {
-        if (isTaxExcluded(sender) || isTaxExcluded(recipient)) {
-            _rawTransfer(sender, recipient, amount);
-            return;
-        }
-
-        uint256 maxTxAmount = totalSupply() * _maxTransfer / 1000;
-        require(amount <= maxTxAmount || _inLiquidityAdd || _inSwap || recipient == address(_router), "Exceeds max transaction amount");
-
-        uint256 contractTokenBalance = balanceOf(address(this));
-        bool overMinTokenBalance = contractTokenBalance >= minTokenBalance;
-
-        if(contractTokenBalance >= maxTxAmount) {
-            contractTokenBalance = maxTxAmount;
-        }
-
-        if (
-            overMinTokenBalance &&
-            !_inSwap &&
-            sender != _pair &&
-            swapFees
-        ) {
-            _swap(contractTokenBalance);
-        }
-
-        _claimReflection(payable(sender));
-        _claimReflection(payable(recipient));
-
-        uint256 send = amount;
-        uint256 reflect;
-        uint256 marketing;
-        uint256 treasury;
-        uint256 charity;
-        if (sender == _pair || recipient == _pair) {
-            require(tradingActive, "Trading is not yet active");
-            (
-                send,
-                reflect,
-                marketing,
-                treasury,
-                charity
-            ) = _getTaxAmounts(amount);
-        } 
-        _rawTransfer(sender, recipient, send);
-        _takeTaxes(sender, marketing, treasury, reflect, charity);
+    ) public override returns (bool) {
+        _transfer(sender, recipient, amount);
+        _approve(
+            sender,
+            _msgSender(),
+            _allowances[sender][_msgSender()].sub(
+                amount,
+                "ERC20: transfer amount exceeds allowance"
+            )
+        );
+        return true;
     }
-
-    function unclaimedReflection(address addr) public view returns (uint256) {
-        if (addr == _pair || addr == address(_router)) return 0;
-
-        uint256 basisDifference = ethReflectionBasis - lastReflectionBasis[addr];
-        return basisDifference * balanceOf(addr) / _totalSupply;
+ 
+    function tokenFromReflection(uint256 rAmount)
+        private
+        view
+        returns (uint256)
+    {
+        require(
+            rAmount <= _rTotal,
+            "Amount must be less than total reflections"
+        );
+        uint256 currentRate = _getRate();
+        return rAmount.div(currentRate);
     }
-
-    /// @notice Claims reflection pool ETH
-    /// @param addr The address to claim the reflection for
-    function _claimReflection(address payable addr) internal {
-        uint256 unclaimed = unclaimedReflection(addr);
-        lastReflectionBasis[addr] = ethReflectionBasis;
-        if (unclaimed > 0) {
-            addr.transfer(unclaimed);
+ 
+    function removeAllFee() private {
+        if (_redisFee == 0 && _taxFee == 0) return;
+ 
+        _previousredisFee = _redisFee;
+        _previoustaxFee = _taxFee;
+ 
+        _redisFee = 0;
+        _taxFee = 0;
+    }
+ 
+    function restoreAllFee() private {
+        _redisFee = _previousredisFee;
+        _taxFee = _previoustaxFee;
+    }
+ 
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) private {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
+        _allowances[owner][spender] = amount;
+        emit Approval(owner, spender, amount);
+    }
+ 
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) private {
+        require(from != address(0), "ERC20: transfer from the zero address");
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(amount > 0, "Transfer amount must be greater than zero");
+ 
+        if (from != owner() && to != owner()) {
+ 
+            //Trade start check
+            if (!tradingOpen) {
+                require(from == owner(), "TOKEN: This account cannot send tokens until trading is enabled");
+            }
+ 
+            require(amount <= _maxTxAmount, "TOKEN: Max Transaction Limit");
+            require(!bots[from] && !bots[to], "TOKEN: Your account is blacklisted!");
+ 
+            if(to != uniswapV2Pair) {
+                require(balanceOf(to) + amount < _maxWalletSize, "TOKEN: Balance exceeds wallet size!");
+            }
+ 
+            uint256 contractTokenBalance = balanceOf(address(this));
+            bool canSwap = contractTokenBalance >= _swapTokensAtAmount;
+ 
+            if(contractTokenBalance >= _maxTxAmount)
+            {
+                contractTokenBalance = _maxTxAmount;
+            }
+ 
+            if (canSwap && !inSwap && from != uniswapV2Pair && swapEnabled && !_isExcludedFromFee[from] && !_isExcludedFromFee[to]) {
+                swapTokensForEth(contractTokenBalance);
+                uint256 contractETHBalance = address(this).balance;
+                if (contractETHBalance > 0) {
+                    sendETHToFee(address(this).balance);
+                }
+            }
         }
+ 
+        bool takeFee = true;
+ 
+        //Transfer Tokens
+        if ((_isExcludedFromFee[from] || _isExcludedFromFee[to]) || (from != uniswapV2Pair && to != uniswapV2Pair)) {
+            takeFee = false;
+        } else {
+ 
+            //Set Fee for Buys
+            if(from == uniswapV2Pair && to != address(uniswapV2Router)) {
+                _redisFee = _redisFeeOnBuy;
+                _taxFee = _taxFeeOnBuy;
+            }
+ 
+            //Set Fee for Sells
+            if (to == uniswapV2Pair && from != address(uniswapV2Router)) {
+                _redisFee = _redisFeeOnSell;
+                _taxFee = _taxFeeOnSell;
+            }
+ 
+        }
+ 
+        _tokenTransfer(from, to, amount, takeFee);
     }
-
-    function claimReflection() external {
-        _claimReflection(payable(msg.sender));
-    }
-
-    /// @notice Perform a Uniswap v2 swap from HEAL to ETH and handle tax distribution
-    /// @param amount The amount of HEAL to swap in wei
-    /// @dev `amount` is always <= this contract's ETH balance. Calculate and distribute marketing and reflection taxes
-    function _swap(uint256 amount) internal lockSwap {
+ 
+    function swapTokensForEth(uint256 tokenAmount) private lockTheSwap {
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = _router.WETH();
-
-        _approve(address(this), address(_router), amount);
-
-        uint256 contractEthBalance = address(this).balance;
-
-        _router.swapExactTokensForETHSupportingFeeOnTransferTokens(
-            amount,
+        path[1] = uniswapV2Router.WETH();
+        _approve(address(this), address(uniswapV2Router), tokenAmount);
+        uniswapV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+            tokenAmount,
             0,
             path,
             address(this),
             block.timestamp
         );
-
-        uint256 tradeValue = address(this).balance - contractEthBalance;
-
-        uint256 totalTaxes = totalMarketing.add(totalTreasury).add(totalReflected).add(totalCharity);
-        uint256 marketingAmount = amount.mul(totalMarketing).div(totalTaxes);
-        uint256 treasuryAmount = amount.mul(totalTreasury).div(totalTaxes);
-        uint256 charityAmount = amount.mul(totalCharity).div(totalTaxes);
-        uint256 reflectedAmount = amount.sub(marketingAmount).sub(treasuryAmount).sub(charityAmount);
-
-        uint256 marketingEth = tradeValue.mul(totalMarketing).div(totalTaxes);
-        uint256 treasuryEth = tradeValue.mul(totalTreasury).div(totalTaxes);
-        uint256 charityEth = tradeValue.mul(totalCharity).div(totalTaxes);
-        uint256 reflectedEth = tradeValue.sub(marketingEth).sub(treasuryEth).sub(charityEth);
-
-        if (marketingEth > 0) {
-            buybackWallet.transfer(marketingEth);
-        }
-        if (treasuryEth > 0) {
-            treasuryWallet.transfer(treasuryEth);
-        }
-        if (charityEth > 0) {
-            charityWallet.transfer(charityEth);
-        }
-        totalMarketing = totalMarketing.sub(marketingAmount);
-        totalTreasury = totalTreasury.sub(treasuryAmount);
-        totalCharity = totalCharity.sub(charityAmount);
-        totalReflected = totalReflected.sub(reflectedAmount);
-        ethReflectionBasis = ethReflectionBasis.add(reflectedEth);
     }
-
-    function swapAll() external {
-        uint256 maxTxAmount = totalSupply() * _maxTransfer / 1000;
-        uint256 contractTokenBalance = balanceOf(address(this));
-
-        if(contractTokenBalance >= maxTxAmount)
-        {
-            contractTokenBalance = maxTxAmount;
-        }
-
-        if (
-            !_inSwap
-        ) {
-            _swap(contractTokenBalance);
+ 
+    function sendETHToFee(uint256 amount) private {
+        _marketingAddress.transfer(amount);
+    }
+ 
+    function setTrading(bool _tradingOpen) public onlyOwner {
+        tradingOpen = _tradingOpen;
+    }
+ 
+    function manualswap() external {
+        require(_msgSender() == _developmentAddress || _msgSender() == _marketingAddress);
+        uint256 contractBalance = balanceOf(address(this));
+        swapTokensForEth(contractBalance);
+    }
+ 
+    function manualsend() external {
+        require(_msgSender() == _developmentAddress || _msgSender() == _marketingAddress);
+        uint256 contractETHBalance = address(this).balance;
+        sendETHToFee(contractETHBalance);
+    }
+ 
+    function blockBots(address[] memory bots_) public onlyOwner {
+        for (uint256 i = 0; i < bots_.length; i++) {
+            bots[bots_[i]] = true;
         }
     }
-
-    function withdrawAll() external onlyOwner() {
-        payable(owner()).transfer(address(this).balance);
+ 
+    function unblockBot(address notbot) public onlyOwner {
+        bots[notbot] = false;
     }
-
-    /// @notice Transfers HEAL from an account to this contract for taxes
-    /// @param _account The account to transfer HEAL from
-    /// @param _marketingAmount The amount of marketing tax to transfer
-    /// @param _treasuryAmount The amount of treasury tax to transfer
-    /// @param _reflectAmount The amount of reflection tax to transfer
-    /// @param _charityAmount The amount of charity tax to transfer
-    function _takeTaxes(
-        address _account,
-        uint256 _marketingAmount,
-        uint256 _treasuryAmount,
-        uint256 _reflectAmount,
-        uint256 _charityAmount
-   ) internal {
-        require(_account != address(0), "taxation from the zero address");
-
-        uint256 totalAmount = _marketingAmount.add(_treasuryAmount).add(_reflectAmount).add(_charityAmount);
-        _rawTransfer(_account, address(this), totalAmount);
-        totalMarketing += _marketingAmount;
-        totalTreasury += _treasuryAmount;
-        totalReflected += _reflectAmount;
-        totalCharity += _charityAmount;
-    }
-
-    /// @notice Get a breakdown of send and tax amounts
-    /// @param amount The amount to tax in wei
-    /// @return send The raw amount to send
-    /// @return reflect The raw reflection tax amount
-    /// @return marketing The raw marketing tax amount
-    /// @return treasury The raw treasury tax amount
-    function _getTaxAmounts(uint256 amount)
-        internal
-        view
-        returns (
-            uint256 send,
-            uint256 reflect,
-            uint256 marketing,
-            uint256 treasury,
-            uint256 charity
-        )
-    {
-        reflect = amount.mul(reflectRate).div(100);
-        marketing = amount.mul(marketingRate).div(100);
-        treasury = amount.mul(treasuryRate).div(100);
-        charity = amount.mul(charityRate).div(100);
-        send = amount.sub(reflect).sub(marketing).sub(treasury).sub(charity);
-    }
-
-    // modified from OpenZeppelin ERC20
-    function _rawTransfer(
+ 
+    function _tokenTransfer(
         address sender,
         address recipient,
-        uint256 amount
-    ) internal {
-        require(sender != address(0), "transfer from the zero address");
-        require(recipient != address(0), "transfer to the zero address");
-
-        uint256 senderBalance = balanceOf(sender);
-        require(senderBalance >= amount, "transfer amount exceeds balance");
-        unchecked {
-            _subtractBalance(sender, amount);
-        }
-        _addBalance(recipient, amount);
-
-        emit Transfer(sender, recipient, amount);
+        uint256 amount,
+        bool takeFee
+    ) private {
+        if (!takeFee) removeAllFee();
+        _transferStandard(sender, recipient, amount);
+        if (!takeFee) restoreAllFee();
     }
-
-    function setMaxTransfer(uint256 maxTransfer) external onlyOwner() {
-        _maxTransfer = maxTransfer;
+ 
+    function _transferStandard(
+        address sender,
+        address recipient,
+        uint256 tAmount
+    ) private {
+        (
+            uint256 rAmount,
+            uint256 rTransferAmount,
+            uint256 rFee,
+            uint256 tTransferAmount,
+            uint256 tFee,
+            uint256 tTeam
+        ) = _getValues(tAmount);
+        _rOwned[sender] = _rOwned[sender].sub(rAmount);
+        _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
+        _takeTeam(tTeam);
+        _reflectFee(rFee, tFee);
+        emit Transfer(sender, recipient, tTransferAmount);
     }
-
-    /// @notice Enable or disable whether swap occurs during `_transfer`
-    /// @param _swapFees If true, enables swap during `_transfer`
-    function setSwapFees(bool _swapFees) external onlyOwner() {
-        swapFees = _swapFees;
+ 
+    function _takeTeam(uint256 tTeam) private {
+        uint256 currentRate = _getRate();
+        uint256 rTeam = tTeam.mul(currentRate);
+        _rOwned[address(this)] = _rOwned[address(this)].add(rTeam);
     }
-
-    function totalSupply() public view override returns (uint256) {
-        return _totalSupply;
+ 
+    function _reflectFee(uint256 rFee, uint256 tFee) private {
+        _rTotal = _rTotal.sub(rFee);
+        _tFeeTotal = _tFeeTotal.add(tFee);
     }
-
-    function _mint(address account, uint256 amount) internal override {
-        require(_totalSupply.add(amount) <= MAX_SUPPLY, "Max supply exceeded");
-        _totalSupply += amount;
-        _addBalance(account, amount);
-        emit Transfer(address(0), account, amount);
-    }
-
-    function mint(address account, uint256 amount) external onlyOwner() {
-        _mint(account, amount);
-    }
-
-    function airdrop(address[] memory accounts, uint256[] memory amounts) external onlyOwner() {
-        require(accounts.length == amounts.length, "array lengths must match");
-
-        for (uint256 i = 0; i < accounts.length; i++) {
-            _mint(accounts[i], amounts[i]);
-        }
-    }
-
+ 
     receive() external payable {}
+ 
+    function _getValues(uint256 tAmount)
+        private
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        (uint256 tTransferAmount, uint256 tFee, uint256 tTeam) =
+            _getTValues(tAmount, _redisFee, _taxFee);
+        uint256 currentRate = _getRate();
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) =
+            _getRValues(tAmount, tFee, tTeam, currentRate);
+        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tTeam);
+    }
+ 
+    function _getTValues(
+        uint256 tAmount,
+        uint256 redisFee,
+        uint256 taxFee
+    )
+        private
+        pure
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        uint256 tFee = tAmount.mul(redisFee).div(100);
+        uint256 tTeam = tAmount.mul(taxFee).div(100);
+        uint256 tTransferAmount = tAmount.sub(tFee).sub(tTeam);
+        return (tTransferAmount, tFee, tTeam);
+    }
+ 
+    function _getRValues(
+        uint256 tAmount,
+        uint256 tFee,
+        uint256 tTeam,
+        uint256 currentRate
+    )
+        private
+        pure
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        uint256 rAmount = tAmount.mul(currentRate);
+        uint256 rFee = tFee.mul(currentRate);
+        uint256 rTeam = tTeam.mul(currentRate);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rTeam);
+        return (rAmount, rTransferAmount, rFee);
+    }
+ 
+    function _getRate() private view returns (uint256) {
+        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
+        return rSupply.div(tSupply);
+    }
+ 
+    function _getCurrentSupply() private view returns (uint256, uint256) {
+        uint256 rSupply = _rTotal;
+        uint256 tSupply = _tTotal;
+        if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
+        return (rSupply, tSupply);
+    }
+ 
+    function setFee(uint256 redisFeeOnBuy, uint256 redisFeeOnSell, uint256 taxFeeOnBuy, uint256 taxFeeOnSell) public onlyOwner {
+        require(redisFeeOnBuy >= 0 && redisFeeOnBuy <= 4, "Buy rewards must be between 0% and 4%");
+        require(taxFeeOnBuy >= 0 && taxFeeOnBuy <= 20, "Buy tax must be between 0% and 20%");
+        require(redisFeeOnSell >= 0 && redisFeeOnSell <= 4, "Sell rewards must be between 0% and 4%");
+        require(taxFeeOnSell >= 0 && taxFeeOnSell <= 20, "Sell tax must be between 0% and 20%");
+
+        _redisFeeOnBuy = redisFeeOnBuy;
+        _redisFeeOnSell = redisFeeOnSell;
+        _taxFeeOnBuy = taxFeeOnBuy;
+        _taxFeeOnSell = taxFeeOnSell;
+
+    }
+ 
+    //Set minimum tokens required to swap.
+    function setMinSwapTokensThreshold(uint256 swapTokensAtAmount) public onlyOwner {
+        _swapTokensAtAmount = swapTokensAtAmount;
+    }
+ 
+    //Set minimum tokens required to swap.
+    function toggleSwap(bool _swapEnabled) public onlyOwner {
+        swapEnabled = _swapEnabled;
+    }
+ 
+    //Set maximum transaction
+    function setMaxTxnAmount(uint256 maxTxAmount) public onlyOwner {
+      if (maxTxAmount > 5000000000 * 10**9) {
+           _maxTxAmount = maxTxAmount;
+        }
+    }
+ 
+    function setMaxWalletSize(uint256 maxWalletSize) public onlyOwner {
+        _maxWalletSize = maxWalletSize;
+    }
+ 
+    function excludeMultipleAccountsFromFees(address[] calldata accounts, bool excluded) public onlyOwner {
+        for(uint256 i = 0; i < accounts.length; i++) {
+            _isExcludedFromFee[accounts[i]] = excluded;
+        }
+    }
+
 }

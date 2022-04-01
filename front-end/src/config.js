@@ -1,9 +1,10 @@
 
 export const config = {
   ether : {
+    alias       : "mainnet",
     chainName   : "Ethereum",
     chainId : 1,
-    rpc     : "https://mainnet.infura.io/v3/",
+    rpc     : "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
     nativeCurrency: {
       name: 'ETH',
       symbol: 'ETH',
@@ -13,6 +14,23 @@ export const config = {
     router      : "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
     weth        : "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     stablecoin  : "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    treasury    : "0x7580C35f3FC73BE051f39ECdCD7f94fF53725960",
+  },
+  ropsten : {
+    alias     : "ropsten",
+    chainName : "Ropsten",
+    chainId   : 3,
+    rpc       : "https://ropsten.infura.io/v3/4ed333d7dc574183b0f09d3bcdebcb1e",
+    nativeCurrency: {
+      name: 'ETH',
+      symbol: 'ETH',
+      decimals: 18
+    },
+    blockExplorerUrl : "https://ropsten.etherscan.io",
+    router      : "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+    weth        : "0xc778417e063141139fce010982780140aa0cd5ab",
+    stablecoin  : "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+    treasury    : "0x85048aae2FCc6877cA379e2dfDD61ea208Fa076C",
   },
   bsc : {
     chainId : 56,
@@ -57,10 +75,10 @@ export const config = {
     rpc     : "http://localhost:8545"
   },
   contracts : {
-    heal    : "0xE7Ffaaa00Ee080b920B093425ea36F553102f485",
+    heal    : "0x383B0b2ce2e1757b5e1D087D8f36013eA595541a",
     faas    : "0xe5089AF9749aA2Bc0612140cd62b2CC1162D05f6",
-    distributor : "0x1eA11d3B053884DAC33Ec0493214d50351a21dcb"
+    distributor : "0x422172cC753cC24e0f89983FeeA11D1fdaaaace7"
   }
 }
 
-export const TARGET_NET = config.bsc_test
+export const TARGET_NET = config.ether

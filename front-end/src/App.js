@@ -23,11 +23,11 @@ function App() {
   const dispatch = useDispatch()
   // loading status
   const [loading, setLoading] = useState(false)
-  
+
   // refresh function
   const refresh = useCallback(async () => {
     const provider = wallet._web3ReactContext.library;
-    const healInfo = await queryHealInfo(provider)
+    const healInfo = await queryHealInfo(provider, wallet.account)
     if (healInfo === null)
       return
     dispatch(setTokenStat(healInfo.tokenStat))
@@ -59,23 +59,23 @@ function App() {
   }, [wallet.balance])
 
   return (
-    <Context.Provider value={{TARGET_NET, setLoading}}>
-      <Title 
-        brand = '/images/brand.png'
-        title = "HEAL THE WORLD"
+    <Context.Provider value={{ TARGET_NET, setLoading }}>
+      <Title
+        brand='/images/brand.png'
+        title="HEAL THE WORLD"
       />
       <BrowserRouter>
         <MainNav />
         <Main />
       </BrowserRouter>
       <Footer />
-      <ToastContainer 
-      position= "top-center"
-      theme='dark'
-  />
-    {
-      loading===true && <LoadingSpinner />
-    }
+      <ToastContainer
+        position="top-center"
+        theme='dark'
+      />
+      {
+        loading === true && <LoadingSpinner />
+      }
     </Context.Provider>
   );
 }

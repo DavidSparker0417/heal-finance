@@ -47,8 +47,8 @@ function StakerPanel({balance, totalStaked}) {
 
     const transaction = 
       type === 'Stake' 
-        ? healStake(wallet.ethereum, amount, [])
-        : healUnstake(wallet.ethereum, amount === totalStaked ? 0 : amount)
+        ? healStake(wallet.ethereum, wallet.account, amount, [])
+        : healUnstake(wallet.ethereum, wallet.account, amount === totalStaked ? 0 : amount)
     setLoading(true)
     transaction
       .then(function() {
@@ -63,7 +63,7 @@ function StakerPanel({balance, totalStaked}) {
 
   function handleApprove() {
     setLoading(true)
-    healApprove(wallet.ethereum)
+    healApprove(wallet.ethereum, wallet.account)
       .then(function() {
         setLoading(false)
         toast.success("Successfully approved")

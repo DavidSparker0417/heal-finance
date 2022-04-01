@@ -1,8 +1,10 @@
 {
-  "name": "CAMELOT",
+  "name": "heal-dashboard",
+  "homepage": "https://healdashboard.com",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@coinbase/wallet-sdk": "^3.0.5",
     "@react-navigation/native": "^6.0.8",
     "@reduxjs/toolkit": "^1.8.0",
     "@testing-library/jest-dom": "^5.16.2",

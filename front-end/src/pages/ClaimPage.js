@@ -5,6 +5,7 @@ import '../css/button.css'
 import { useContext, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Context } from 'App'
+import { dsUtilNumberWithCommas } from 'ds-lib/ds-utils'
 
 const TalbeColumn = ({title, value}) => {
   return (
@@ -63,7 +64,7 @@ export default function Statistics({style}) {
     const provider = wallet._web3ReactContext.library
     setWaiting(true)
     setLoading(true)
-    const transaction = healClaim(provider)
+    const transaction = healClaim(provider, wallet.account)
     await transaction
       .then(function(recipent) {
         toast.success("Successfuly claimed!")
@@ -83,21 +84,21 @@ export default function Statistics({style}) {
       <InfoCard 
         icon='./images/balance.svg'
         title="Your HEAL Balance" 
-        value={`${healInfo.userStat.tokenBalance} HEAL`}
+        value={`${dsUtilNumberWithCommas(healInfo.userStat.tokenBalance)} HEAL`}
       />
       <InfoCard 
         icon='./images/unclaimed.svg'
         title="Unclaimed Rewards" 
-        value={`${healInfo.userStat.unClaimedRewards} ${healInfo.stakingStat.rewardTokenSymbol}`}
+        value={`${dsUtilNumberWithCommas(healInfo.userStat.unClaimedRewards)} ${healInfo.stakingStat.rewardTokenSymbol}`}
       />
       <InfoCard 
         icon='./images/treasury.svg'
         title="Treasury Balance" 
-        value={`${healInfo.tokenStat.treasuryBalance} $`}/>
+        value={`${dsUtilNumberWithCommas(healInfo.tokenStat.treasuryBalance)} $`}/>
       <InfoCard 
         icon='./images/claim.svg'
         title="Total Claimed" 
-        value={`${healInfo.userStat.totalClaimed} ${healInfo.stakingStat.rewardTokenSymbol}`}/>
+        value={`${dsUtilNumberWithCommas(healInfo.userStat.totalClaimed)} ${healInfo.stakingStat.rewardTokenSymbol}`}/>
     </div>
     <div className="stat-bottom container">
       {/* <TableCard 
@@ -135,7 +136,7 @@ export default function Statistics({style}) {
           },
           {
             title: "Total Supply",
-            value: `${healInfo.tokenStat.totalSupply} $HEAL`
+            value: `${dsUtilNumberWithCommas(healInfo.tokenStat.totalSupply)} $HEAL`
           }
         ]}
       />
@@ -150,7 +151,7 @@ export default function Statistics({style}) {
             title: "Rewards",
             value: 
               <div className="al-h" style={{width:"100%", justifyContent:"space-between"}}>
-                <div>{`${healInfo.userStat.unClaimedRewards} ${healInfo.stakingStat.rewardTokenSymbol}`}</div>
+                <div>{`${dsUtilNumberWithCommas(healInfo.userStat.unClaimedRewards)} ${healInfo.stakingStat.rewardTokenSymbol}`}</div>
                 {
                   healInfo.userStat.unClaimedRewards !== 0
                   && 

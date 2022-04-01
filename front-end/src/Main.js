@@ -9,20 +9,20 @@ import DaoPage from 'pages/DaoPage';
 export default function Main() {
   const location = useLocation()
 
-  return(
+  return (
     <TransitionGroup>
-      <CSSTransition 
-        timeout={500} 
-        classNames='fade' 
+      <CSSTransition
+        timeout={500}
+        classNames='fade'
         key={location.key}
       >
-      <Routes location={location}>
-        <Route path='/Claim' element={<Statistics style={{marginBottom:"50px"}}/>}/>
-        <Route path='/Staking' element={<StakingPage />} />
-        <Route path='/DAO' element={<DaoPage />} />
-        <Route path="*" element={<Navigate to="/Claim" />} />
-      </Routes>
-    </CSSTransition>
-  </TransitionGroup>
+        <Routes location={location}>
+          <Route path='/Claim' element={<Statistics style={{marginBottom:"50px"}}/>}/>
+          <Route path='/Staking' element={<StakingPage />} />
+          <Route path='/DAO' element={<DaoPage />} />
+          <Route path="/" element={<Statistics style={{ marginBottom: "50px" }} />} />
+        </Routes>
+      </CSSTransition>
+    </TransitionGroup>
   )
 }

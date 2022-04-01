@@ -1,16 +1,19 @@
 import { Context } from "App";
 import { dsWalletGetTrimedAccountName } from "ds-lib/ds-web3";
-import { dsErrMsgGet, dsWalletAddChain, dsWalletConnectInjected } from "../ds-lib/ds-web3";
+import { dsErrMsgGet, dsWalletAddChain, dsWalletCoinbaseGetProvider, dsWalletConnectInjected } from "../ds-lib/ds-web3";
 import { useContext, useEffect, useState } from "react";
 import { useWallet } from "use-wallet";
 import { DivVCenter } from "./common/StyledComponents";
 import { toast } from "react-toastify";
+import { WalletConnect } from "./common/WalletConnect";
+import { config } from "config";
 
 export default function Title({ brand, title }) {
   const wallet = useWallet()
   const { TARGET_NET } = useContext(Context)
   const [walletButtonFace, setWalletButtonFace] = useState("Wallet Connect");
   const { setLoading } = useContext(Context)
+  const [showWallet, setShowWallet] = useState(false)
   // event on wallet 
   useEffect(() => {
     if (wallet.status === 'connecting')
@@ -19,29 +22,25 @@ export default function Title({ brand, title }) {
       ? dsWalletGetTrimedAccountName(wallet.account)
       : "Wallet Connect";
     setWalletButtonFace(btnName);
+    if (wallet.isConnected())
+      toast.success("Wallet connected!")
   }, [wallet.status])
 
-  // halder on clicking wallet connect button
-  async function handleConnectWallet() {
-    if (wallet.isConnected()) {
-      wallet.reset()
-      return;
-    }
+  async function walletConnect(connector) {
     let behavior
-    if (window.ethereum) {
+    if (connector === 'metamask' || connector === 'coinbase') {
       setLoading(true)
       try {
-        await dsWalletConnectInjected(TARGET_NET)
+        await dsWalletConnectInjected(TARGET_NET, connector)
       } catch (e) {
         setLoading(false)
-        toast.error(dsErrMsgGet(e.message))
+        toast.error(e.message?dsErrMsgGet(e.message):e)
         return
       }
       behavior = wallet.connect()
       behavior
       .then(function() {
         setLoading(false)
-        toast.success("Wallet connected!")
       })
       .catch(function(e) {
         setLoading(false)
@@ -49,9 +48,16 @@ export default function Title({ brand, title }) {
       })
     }
     else
-      wallet.connect('walletconnect')
+      wallet.connect(connector)
   }
-
+  // halder on clicking wallet connect button
+  async function handleConnectWallet() {
+    if (wallet.isConnected()) {
+      wallet.reset()
+      return;
+    }
+    setShowWallet(true)
+  }
   return (
     <div className="al-h main-title" style={{ justifyContent: "space-between" }}>
       <DivVCenter>
@@ -67,7 +73,9 @@ export default function Title({ brand, title }) {
       </DivVCenter>
       <div style={{ display: "flex", justifyContent: "right" }}>
         <DivVCenter>
-          <button onClick={() => window.open('https://app.uniswap.org/#/swap?outputCurrency=0xd5A98E77d1fEB091344096301Ea336a5C07a6A41&chain=mainnet}', 'blank')}>
+          <button 
+            onClick={() => 
+              window.open(`https://app.uniswap.org/#/swap?outputCurrency=${config.contracts.heal}&chain=${TARGET_NET.alias}}`, 'blank')}>
             BUY ON UNISWAP
           </button>
         </DivVCenter>
@@ -77,6 +85,11 @@ export default function Title({ brand, title }) {
           </button>
         </DivVCenter>
       </div>
+      {showWallet 
+      && <WalletConnect 
+            close={() => setShowWallet(false)} 
+            walletConnect={walletConnect} 
+      />}
     </div>
   )
 }

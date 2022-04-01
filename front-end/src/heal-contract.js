@@ -1,4 +1,4 @@
-import { dsUtilGenerateRandomNumber, dsUtilToHumanizeFixed } from "./ds-lib/ds-utils";
+import { dsUtilGenerateRandomNumber, dsUtilNumberWithCommas, dsUtilToHumanizeFixed } from "./ds-lib/ds-utils";
 import healAbi from './contracts/HEAL.json'
 import faasAbi from './contracts/HEALFaaS.json'
 import stakingAbi from './contracts/HEALFaaSToken.json'
@@ -160,7 +160,7 @@ async function healFaaSGetStakingPool(provider) {
   return [stakingPools[0], contract]
 }
 
-export async function queryHealInfo(_provider) {
+export async function queryHealInfo(_provider, _account) {
   let tokenStat = {
     price           : 0,
     totalSupply     : 0,
@@ -207,18 +207,21 @@ export async function queryHealInfo(_provider) {
       const rewardDecmials = parseInt(await dsWeb3GetTokenDecmials(provider, rewardingToken))
       // get token stat
       const treasuryAddr = TARGET_NET.treasury
-      tokenStat.treasuryBalance = dsBnWeiToEth(await dsWeb3GetStableBalance(provider, treasuryAddr, TARGET_NET.router, TARGET_NET.stablecoin))
+      tokenStat.treasuryBalance = await dsWeb3GetStableBalance(provider, treasuryAddr, TARGET_NET.router, TARGET_NET.stablecoin)
+      // console.log("[HEAL] treasuryBalance = ", tokenStat.treasuryBalance)
       tokenStat.totalSupply = dsBnWeiToEth(await heal.methods.totalSupply().call(), decimals)
-      tokenStat.price = dsBnWeiToEth(await dsWeb3GetTokenPriceByRouter(provider, TARGET_NET.router, healToken, TARGET_NET.stablecoin))
+      tokenStat.price = await dsWeb3GetTokenPriceByRouter(provider, TARGET_NET.router, healToken, TARGET_NET.stablecoin)
       // get staking stat
       stakingStat.rewardTokenSymbol = "ETH" //await dsWeb3TokenSymbol(provider, rewardingToken)
       stakingStat.totalStaked = dsBnWeiToEth(await distributor.methods.totalSharesDeposited().call(), decimals)
       stakingStat.totalStakers = await distributor.methods.totalStakedUsers().call()
       // get user specific stat
-      const account = provider.selectedAddress
+      const account = _account // provider.selectedAddress
       if (account !== null && account !== undefined)
       {
+        // alert(account)
         userStat.tokenBalance = dsBnWeiToEth(await dsWeb3GetTokenBalance(heal, account), decimals)
+        // console.log("[HEAL] healBalance = ", userStat.tokenBalance)
         const allowance = await heal.methods.allowance(account, config.contracts.distributor).call()
         userStat.approved = allowance !== "0"
         const rewards = await distributor.methods.rewards(account).call()
@@ -275,45 +278,49 @@ async function getStakingTokenInfo(provider, distributor) {
   return [contract, decimals]
 }
 
-export async function healApprove(provider) {
+export async function healApprove(provider, account) {
   const distrbAddr = config.contracts.distributor
   const distributor = dsWeb3GetContract(provider, distrbAddr, distribAbi.abi)
   const [healContract, ] = await getStakingTokenInfo(provider, distributor)
   const transaction = dsWeb3SendTransaction(
     provider,
     null,
+    account,
     healContract.methods.approve(distrbAddr, UINT256_MAX)
   )
   return transaction
 }
 
-export async function healStake(provider, amount, nftIds) {
+export async function healStake(provider, account, amount, nftIds) {
   const distributor = dsWeb3GetContract(provider, config.contracts.distributor, distribAbi.abi)
   const [, decimals] = await getStakingTokenInfo(provider, distributor)
   const transaction = dsWeb3SendTransaction(
     provider,
     null,
+    account,
     distributor.methods.stake(dsBnEthToWei(amount, decimals), nftIds)
   )
   return transaction
 }
 
-export async function healUnstake(provider, amount) {
+export async function healUnstake(provider, account, amount) {
   const distributor = dsWeb3GetContract(provider, config.contracts.distributor, distribAbi.abi)
   const [, decimals] = await getStakingTokenInfo(provider, distributor)
   const transaction = dsWeb3SendTransaction(
     provider,
     null,
+    account,
     distributor.methods.unstake(dsBnEthToWei(amount, decimals), false)
   )
   return transaction
 }
 
-export async function healClaim(provider) {
+export async function healClaim(provider, account) {
   const distributor = dsWeb3GetContract(provider, config.contracts.distributor, distribAbi.abi)
   const transaction = dsWeb3SendTransaction(
     provider,
     null,
+    account,
     distributor.methods.claimReward(false)
   )
   return transaction
